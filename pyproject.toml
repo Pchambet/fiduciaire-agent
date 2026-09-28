@@ -2,13 +2,17 @@
 name = "fiduciaire-agent"
 version = "0.1.0"
 authors = [
-    { name = "Pierre_Chambet", email = "pierrechambet@gmail.com" }
+    { name = "Pierre Chambet", email = "pierrechambet@gmail.com" }
 ]
+description = "Pré-comptabilité suisse : QR-factures et relevés camt.053, un agent Claude qui classe par MCP, un humain qui valide"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "mcp>=1.2",
+]
 
 [project.scripts]
-fiduciaire-agent = "fiduciaire_agent:main"
+fidu = "fiduciaire_agent:main"
+fidu-mcp = "fiduciaire_agent.mcp_server:main"
 
 [build-system]
 requires = ["uv_build>=0.12.13,<0.13.0"]
