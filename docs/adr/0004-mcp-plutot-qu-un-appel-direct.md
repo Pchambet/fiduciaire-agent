@@ -21,7 +21,7 @@ le serveur par un vrai client MCP, en mémoire et en sous-processus stdio, sans 
 
 ## Conséquences
 
-- On change de modèle sans toucher au code : les deux essais du README utilisent deux modèles.
+- On change de modèle sans toucher au code : les essais de [`docs/essais.md`](../essais.md) utilisent deux modèles.
 - Limite : transport stdio, donc un poste et un utilisateur, sans authentification. Pour une équipe,
   il faudrait le transport HTTP, une authentification et un journal des appels par utilisateur.
 - Si la fiduciaire veut une boucle entièrement intégrée à son application (planification, reprise
