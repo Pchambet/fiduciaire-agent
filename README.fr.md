@@ -99,7 +99,7 @@ l'agent, sauf la facture échue, qui reste une dette à comptabiliser.
 ## Ce que les relectures ont changé
 
 - Le **premier essai de l'agent** a trouvé une facture sans date mal datée : corrigé.
-- Une **relecture de code indépendante** (consigne : justesse seulement) a trouvé
+- Une **passe de relecture distincte** (consigne : justesse seulement) a trouvé
   neuf défauts, tous reproduits puis corrigés, chacun avec un test dans `tests/test_edge_cases.py`.
   Les plus sérieux : une même référence QR chez deux fournisseurs créait un faux « payée deux fois »
   (une référence QR n'est unique que pour un compte créancier) ; un second paiement identique sans

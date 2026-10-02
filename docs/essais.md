@@ -18,7 +18,10 @@ uv run fidu evaluer
 | Claude Sonnet 5 | **9 / 9** | 13 | 0 | 14 | 41 s | 0,14 $ |
 | Claude Sonnet 5, code final | **9 / 9** | 13 | 0 | 14 | 47 s | 0,09 $ |
 
-Aucun n'a proposé d'écriture sur les 7 pièces bloquées. **Neuf pièces et un ou deux essais
+Les classements justes viennent de `fidu evaluer`. Les autres colonnes ont été lues dans la sortie
+stream-json de la CLI et recopiées à la main ; les transcriptions brutes n'ont pas été conservées.
+
+Aucun n'a proposé d'écriture sur les 7 pièces en anomalie (dont 6 bloquées). **Neuf pièces et un ou deux essais
 par modèle ne font pas un banc d'essai** : le résultat dit que la chaîne fonctionne de bout en bout,
 pas quel est le taux d'erreur d'un modèle sur des pièces réelles.
 
