@@ -8,7 +8,7 @@ import os
 import sys
 from pathlib import Path
 
-from . import books, demo
+from . import books, demo, runlog
 
 
 def _print(data) -> None:
@@ -64,6 +64,12 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser(
         "evaluer", help="comparer les classements au corrigé du mois de démonstration"
     )
+    t = sub.add_parser(
+        "essai",
+        help="garder la transcription stream-json d'un essai de l'agent et ajouter sa ligne au journal",
+    )
+    t.add_argument("transcription", type=Path)
+    t.add_argument("--dossier", type=Path, default=Path("docs/runs"))
     a = p.parse_args(argv)
 
     try:
@@ -134,6 +140,12 @@ def main(argv: list[str] | None = None) -> int:
                     f"{mark} {row['piece']:<24} attendu {row['attendu']}  obtenu {got}"
                 )
             print(f"{score['justes']}/{score['total']} justes")
+        elif a.cmd == "essai":
+            score = books.evaluate(db, demo.EXPECTED_CLASSIFICATION)
+            try:
+                _print(runlog.record(a.transcription, a.dossier, score))
+            except (OSError, ValueError) as exc:
+                raise books.BooksError(f"essai non consigné : {exc}") from exc
     except books.BooksError as exc:
         print(f"refusé : {exc}", file=sys.stderr)
         return 1
