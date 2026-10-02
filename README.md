@@ -10,31 +10,24 @@ documents correctly, and it never touched any of the documents held back by the 
 
 **English** · [Français](README.fr.md)
 
-## Result: the agent evaluation
-
-The demo month contains nine documents that no rule covers. Each one has a known answer (account
-and VAT code) in `demo.EXPECTED_CLASSIFICATION`. `fidu evaluer` scores the agent's proposals
-against that answer key. The agent had only the six MCP tools. It had no file access, so it could
-not read the answer key.
-
-| Model | Correct classifications | Tool calls | Server refusals | Turns | Duration | Cost |
-|---|---|---|---|---|---|---|
-| Claude Opus 5.5 | **9 / 9** | 15 | 0 | 16 | 42 s | $0.19 |
-| Claude Sonnet 5 | **9 / 9** | 13 | 0 | 14 | 41 s | $0.14 |
-| Claude Sonnet 5, final code | **9 / 9** | 13 | 0 | 14 | 47 s | $0.09 |
-
-Runs from 2026-09-28, each on a freshly loaded demo month (`fidu demo`). The exact command, the
-model's verbatim summary and what the runs changed in the code are in
-[`docs/essais.md`](docs/essais.md) (in French). **Nine documents and one or two runs per model are
-not a benchmark.** These runs show that the pipeline works end to end. They do not give a model's
-error rate on real documents.
+```mermaid
+flowchart LR
+    Q["13 QR-bills<br/>(QR payload text)"] --> P
+    C["camt.053 statement<br/>15 bank lines"] --> P
+    P["Parse and validate<br/>match payments<br/>run 11 controls"] -->|13 documents| R["Supplier rules and<br/>matched payments"]
+    P -->|9 documents| A["LLM agent over MCP<br/>classifies, never computes"]
+    P -->|"6 documents<br/>(blocking anomalies)"| H["Held for a person"]
+    R --> E["Entries built by ledger.py<br/>status: proposed"]
+    A --> E
+    E --> V["A person approves or rejects<br/>every entry (fidu valider)"]
+```
 
 ## TL;DR
 
 - **28 documents in, three ways out.** The demo month has 13 QR-bills and a camt.053 statement
   with 15 lines. Code proposes 13 entries (5 from supplier rules, 8 from matched payments). 9
-  documents go to the agent. 6 are held for a person by 7 planted anomalies. The overdue invoice
-  is flagged but still booked. A test locks this split.
+  documents go to the agent. 6 documents are held for a person by the 6 blocking anomalies; the
+  7th planted anomaly, an overdue invoice, is flagged but still booked. A test locks this split.
 - **The agent never produces a number.** It sends an account, a VAT code when the bill gives none,
   and a one-sentence reason. The ledger module builds the lines. An unbalanced entry cannot be
   stored.
@@ -47,6 +40,28 @@ error rate on real documents.
   tested against the samples SIX and ISO publish. The suite has 86 tests, ruff runs in CI, and the
   only runtime dependency is the MCP SDK.
 
+## Result: the agent evaluation
+
+The demo month contains nine documents that no rule covers. Each one has a known answer (account
+and VAT code) in `demo.EXPECTED_CLASSIFICATION`. `fidu evaluer` scores the agent's proposals
+against that answer key. The agent had only the six MCP tools. It had no file access, so it could
+not read the answer key.
+
+| Model | Correct classifications | Tool calls | Server refusals | Turns | Duration | Cost |
+|---|---|---|---|---|---|---|
+| Claude Opus 5.5 | **9 / 9** | 15 | 0 | 16 | 42 s | $0.19 |
+| Claude Sonnet 5 | **9 / 9** | 13 | 0 | 14 | 41 s | $0.14 |
+| Claude Sonnet 5, after review fixes | **9 / 9** | 13 | 0 | 14 | 47 s | $0.09 |
+
+Runs from 2026-09-28, each on a freshly loaded demo month (`fidu demo`). The third run used the
+code after the fixes listed in [What review changed](#what-review-changed). The
+correct-classification count comes from `fidu evaluer`. The other columns were read from the CLI's
+stream-json output and copied by hand; the raw transcripts were not kept, so they cannot be
+re-checked. The exact command, the model's verbatim summary and what the runs changed in the code
+are in [`docs/essais.md`](docs/essais.md) (in French). **Nine documents and one or two runs per model are
+not a benchmark.** These runs show that the pipeline works end to end. They do not give a model's
+error rate on real documents.
+
 ## Why it matters
 
 A fiduciary's monthly work for a client is mostly mechanical: read invoices, match payments, split
@@ -58,17 +73,7 @@ draws the line explicitly. The model's error is limited to one small, named and 
 
 ## Approach
 
-```mermaid
-flowchart LR
-    Q["13 QR-bills<br/>(QR payload text)"] --> P
-    C["camt.053 statement<br/>15 bank lines"] --> P
-    P["Parse and validate<br/>match payments<br/>run 11 controls"] -->|13 documents| R["Supplier rules and<br/>matched payments"]
-    P -->|9 documents| A["LLM agent over MCP<br/>classifies, never computes"]
-    P -->|"6 documents<br/>(7 anomalies)"| H["Held for a person"]
-    R --> E["Entries built by ledger.py<br/>status: proposed"]
-    A --> E
-    E --> V["A person approves or rejects<br/>every entry (fidu valider)"]
-```
+The diagram at the top shows the triage. Who does what:
 
 | Who | Does what |
 |---|---|
@@ -178,7 +183,7 @@ problem for any barcode library. The work that matters to a fiduciary starts aft
 - The **first agent run** found a real defect: an undated bill was dated at the statement date
   (30.09) although it had been paid on 20.09. An undated bill now takes the date of its matched
   payment, and a test covers this.
-- An **independent correctness-only code review** found nine defects. Each one was reproduced, fixed
+- A **separate correctness-only review pass** found nine defects. Each one was reproduced, fixed
   and covered by a test in `tests/test_edge_cases.py`. The most serious: the same QR reference at
   two suppliers created a false "paid twice" (a QR reference is unique only for one creditor
   account); a second identical payment without reference went unnoticed and doubled both the
@@ -221,7 +226,7 @@ docs/essais.md   the logged agent runs
 ## References
 
 - SIX, [Swiss QR-bill implementation guidelines](https://www.six-group.com/en/products-services/banking-services/payment-standardization/standards/qr-bill.html) (payload version 0200).
-- Swico, [billing information syntax S1](https://www.swiss-qr-invoice.org/).
+- Swico, billing information syntax S1 (the structured invoice data in the QR-bill); [QR-bill overview](https://www.swiss-qr-invoice.org/).
 - SIX, [Swiss Payment Standards for ISO 20022](https://www.six-group.com/en/products-services/banking-services/payment-standardization/standards/iso-20022.html) (camt.053).
 - ISO 11649:2009, structured creditor reference (RF).
 - Swiss Federal Tax Administration, [VAT rates](https://www.estv.admin.ch/estv/en/home/value-added-tax/vat-rates-switzerland.html).
