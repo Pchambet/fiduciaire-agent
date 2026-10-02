@@ -25,6 +25,24 @@ def test_overview_of_the_demo_month(db):
     assert o["ecritures"] == {"proposees": 13, "validees": 0, "rejetees": 0}
 
 
+def test_every_document_of_the_month_takes_exactly_one_path(db):
+    # The triage the README shows: 28 documents, each booked by code, sent to the agent,
+    # or held for a person (the overdue invoice is flagged but still booked).
+    docs = {
+        r[0]
+        for r in db.execute("SELECT id FROM invoice UNION SELECT id FROM bank_line")
+    }
+    docs |= {a["piece"] for a in books.anomalies(db, "qr_invalid")}
+    booked = {e["piece"] for e in books.entries(db, "proposed")}
+    to_classify = {i.id for i in books.items_to_classify(db)}
+    held = {
+        a["piece"] for a in books.anomalies(db) if a["regle"] not in books.NON_BLOCKING
+    }
+    assert (len(docs), len(booked), len(to_classify), len(held)) == (28, 13, 9, 6)
+    assert booked | to_classify | held == docs
+    assert len(booked) + len(to_classify) + len(held) == len(docs)
+
+
 def test_what_is_left_to_classify_is_exactly_what_no_rule_covers(db):
     assert {i.id for i in books.items_to_classify(db)} == set(
         demo.EXPECTED_CLASSIFICATION
