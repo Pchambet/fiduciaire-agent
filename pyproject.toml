@@ -4,7 +4,9 @@ version = "0.1.0"
 authors = [
     { name = "Pierre Chambet", email = "pierrechambet@gmail.com" }
 ]
-description = "Pré-comptabilité suisse : QR-factures et relevés camt.053, un agent Claude qui classe par MCP, un humain qui valide"
+description = "Swiss pre-accounting: QR-bills and camt.053 statements in, deterministic controls, an LLM agent that classifies over MCP, a human who approves"
+license = "MIT"
+readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "mcp>=1.2",
