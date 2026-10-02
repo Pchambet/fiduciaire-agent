@@ -140,6 +140,7 @@ pas proposée à l'agent, sauf la facture échue, qui reste une dette à comptab
 | `books.py` | Ingestion, rapprochement, contrôles, propositions, validation, évaluation (SQLite) |
 | `mcp_server.py` | Les six outils de l'agent |
 | `cli.py` | La ligne de commande du comptable |
+| `runlog.py` | Un essai de l'agent lu dans sa transcription stream-json (`fidu essai`) |
 | `demo.py` | Le mois de démonstration et son corrigé |
 
 ## Licence

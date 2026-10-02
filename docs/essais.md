@@ -20,9 +20,17 @@ uv run fidu evaluer
 | Claude Sonnet 5, code final | **9 / 9** | 13 | 0 | 14 | 47 s | 0,09 $ |
 
 Les classements justes viennent de `fidu evaluer`. Les autres colonnes ont été lues dans la sortie
-stream-json de la CLI et recopiées à la main ; les transcriptions brutes n'ont pas été conservées.
+stream-json de la CLI et recopiées à la main ; les transcriptions brutes n'ont pas été conservées,
+donc ces colonnes ne peuvent pas être revérifiées.
 Le nombre de jetons et l'usage du cache n'ont pas été relevés non plus : l'écart de coût entre les
 deux essais Sonnet (0,14 $ et 0,09 $ pour les mêmes appels et tours) reste inexpliqué.
+
+Les prochains essais seront consignés sans recopie : rediriger la sortie de la commande ci-dessus
+(`> essai.jsonl`), puis, avant toute validation, lancer `uv run fidu essai essai.jsonl`. La commande
+garde la transcription dans `docs/runs/` (sans les événements `system`, qui décrivent le poste
+local) et ajoute à `docs/runs/results.jsonl` une ligne dont chaque colonne est lue dans la
+transcription (appels d'outils, refus du serveur, tours, durée, coût, jetons et cache), avec le
+score de `fidu evaluer`. Aucun essai n'a encore été consigné ainsi.
 
 Aucun n'a proposé d'écriture sur les 7 pièces en anomalie (dont 6 bloquées). **Neuf pièces et un
 ou deux essais par modèle ne font pas un banc d'essai** : le résultat dit que la chaîne fonctionne

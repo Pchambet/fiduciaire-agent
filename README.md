@@ -37,7 +37,7 @@ flowchart LR
   anomalies and nothing else. The other four controls are tested separately.
 - **Real formats, verified checksums.** The code reads the Swiss QR-bill payload (SIX, version 0200),
   Swico S1 VAT blocks and ISO 20022 camt.053 (.04 and .08). QRR, ISO 11649 and IBAN check digits are
-  tested against the samples SIX and ISO publish. The suite has 86 tests, ruff runs in CI, and the
+  tested against the samples SIX and ISO publish. The suite has 89 tests, ruff runs in CI, and the
   only runtime dependency is the MCP SDK.
 
 ## Result: the agent evaluation
@@ -56,10 +56,12 @@ not read the answer key.
 
 Runs from 2026-09-28, each on a freshly loaded demo month (`fidu demo`). The third run used the code
 after the fixes listed in [What review changed](#what-review-changed). The correct-classification
-count comes from `fidu evaluer`. The other columns were read from the CLI's stream-json output and
-copied by hand; the raw transcripts were not kept, so they cannot be re-checked. Token counts and
+count comes from `fidu evaluer`. **The other columns cannot be re-checked:** they were read from the
+CLI's stream-json output and copied by hand, and the raw transcripts were not kept. Token counts and
 cache use were not recorded either, so the cost gap between the two Sonnet runs ($0.14 and $0.09 for
-the same calls and turns) is not explained. The exact command, the model's verbatim summary and what
+the same calls and turns) is not explained. Later runs go through `fidu essai <transcript>`, which
+keeps the transcript in `docs/runs/` and derives every column, tokens included, into
+`docs/runs/results.jsonl`; no run has been recorded that way yet. The exact command, the model's verbatim summary and what
 the runs changed in the code are in [`docs/essais.md`](docs/essais.md) (in French). **Nine documents
 and one or two runs per model are not a benchmark.** These runs show that the pipeline works end to
 end. They do not give a model's error rate on real documents.
@@ -225,8 +227,9 @@ src/fiduciaire_agent/
   books.py       ingestion, matching, controls, proposals, approval, evaluation (SQLite)
   mcp_server.py  the agent's six tools
   cli.py         the accountant's command line (fidu)
+  runlog.py      an agent run read from its stream-json transcript (fidu essai)
   demo.py        the demo month, its planted anomalies and its answer key
-tests/           86 tests, including the MCP server driven over stdio
+tests/           89 tests, including the MCP server driven over stdio
 docs/adr/        four architecture decision records
 docs/essais.md   the logged agent runs
 ```
