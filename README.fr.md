@@ -53,6 +53,9 @@ uv run fidu evaluer                     # compare les classements au corrigé
 uv run pytest -q
 ```
 
+`fidu demo` annonce 12 factures, pas 13 : la 13<sup>e</sup> QR-facture est refusée à la lecture
+(chiffre de contrôle faux) et apparaît comme l'anomalie `qr_invalid`.
+
 ## Brancher Claude
 
 Claude Desktop (`claude_desktop_config.json`) :
@@ -74,7 +77,8 @@ Claude Code, en tâche de fond : la commande exacte des essais est dans [`docs/e
 Les six outils : `situation`, `pieces_a_classer`, `plan_comptable`, `anomalies`, `expliquer_piece`
 (lecture seule) et `proposer_ecriture`. Un refus du serveur (compte qui n'est pas un compte de
 charges, code TVA contraire à la facture, pièce bloquée) revient à Claude comme une erreur lisible,
-qu'il lit pour se corriger.
+pour qu'il puisse se corriger. Les tests vérifient que l'erreur est lisible ; aucun des essais
+consignés n'a déclenché de refus.
 
 ## Les contrôles
 
@@ -93,8 +97,9 @@ qu'il lit pour se corriger.
 | Paiement qui correspond à plusieurs factures (sans référence) | moyenne | testé à part |
 
 `tests/test_books.py` exige que les contrôles retrouvent **les sept anomalies plantées, et rien
-d'autre** ; `tests/test_edge_cases.py` couvre les autres. Une pièce en anomalie ne reçoit aucune écriture automatique et n'est pas proposée à
-l'agent, sauf la facture échue, qui reste une dette à comptabiliser.
+d'autre** ; les quatre autres sont testés à part (`tests/test_books.py` et
+`tests/test_edge_cases.py`). Une pièce en anomalie ne reçoit aucune écriture automatique et n'est
+pas proposée à l'agent, sauf la facture échue, qui reste une dette à comptabiliser.
 
 ## Ce que les relectures ont changé
 
@@ -120,6 +125,10 @@ l'agent, sauf la facture échue, qui reste une dette à comptabiliser.
   encore exporté.
 - Une facture qui n'indique pas sa TVA n'est pas encore signalée comme risque sur l'impôt préalable
   (relevé par l'agent lors du premier essai).
+- L'évaluation porte sur neuf pièces fictives : elle montre que la chaîne fonctionne, pas la
+  justesse sur de vraies pièces. Les pièces, le corrigé et les descriptions des outils ont été
+  écrits ensemble, et la description des codes TVA nomme les cas exonérés typiques (loyer,
+  assurances, frais bancaires, encaissements) : le jeu est facile par construction.
 
 ## Code
 

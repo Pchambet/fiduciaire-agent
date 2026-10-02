@@ -42,8 +42,9 @@ flowchart LR
 
 ## Result: the agent evaluation
 
-The demo month contains nine documents that no rule covers. Each one has a known answer (account
-and VAT code) in `demo.EXPECTED_CLASSIFICATION`. `fidu evaluer` scores the agent's proposals
+The demo month contains nine documents that no rule covers. Each one has a known answer in
+`demo.EXPECTED_CLASSIFICATION`: the account, plus the VAT code for the five documents that state
+none (the garage bill and the four bank lines). `fidu evaluer` scores the agent's proposals
 against that answer key. The agent had only the six MCP tools. It had no file access, so it could
 not read the answer key.
 
@@ -53,14 +54,15 @@ not read the answer key.
 | Claude Sonnet 5 | **9 / 9** | 13 | 0 | 14 | 41 s | $0.14 |
 | Claude Sonnet 5, after review fixes | **9 / 9** | 13 | 0 | 14 | 47 s | $0.09 |
 
-Runs from 2026-09-28, each on a freshly loaded demo month (`fidu demo`). The third run used the
-code after the fixes listed in [What review changed](#what-review-changed). The
-correct-classification count comes from `fidu evaluer`. The other columns were read from the CLI's
-stream-json output and copied by hand; the raw transcripts were not kept, so they cannot be
-re-checked. The exact command, the model's verbatim summary and what the runs changed in the code
-are in [`docs/essais.md`](docs/essais.md) (in French). **Nine documents and one or two runs per model are
-not a benchmark.** These runs show that the pipeline works end to end. They do not give a model's
-error rate on real documents.
+Runs from 2026-09-28, each on a freshly loaded demo month (`fidu demo`). The third run used the code
+after the fixes listed in [What review changed](#what-review-changed). The correct-classification
+count comes from `fidu evaluer`. The other columns were read from the CLI's stream-json output and
+copied by hand; the raw transcripts were not kept, so they cannot be re-checked. Token counts and
+cache use were not recorded either, so the cost gap between the two Sonnet runs ($0.14 and $0.09 for
+the same calls and turns) is not explained. The exact command, the model's verbatim summary and what
+the runs changed in the code are in [`docs/essais.md`](docs/essais.md) (in French). **Nine documents
+and one or two runs per model are not a benchmark.** These runs show that the pipeline works end to
+end. They do not give a model's error rate on real documents.
 
 ## Why it matters
 
@@ -130,6 +132,9 @@ uv run fidu evaluer                     # score the classifications against the 
 uv run pytest -q
 ```
 
+`fidu demo` reports 12 invoices, not 13: the 13th QR-bill is rejected at parsing (bad check
+digit) and appears as the `qr_invalid` anomaly.
+
 Output of `fidu anomalies` on the demo month:
 
 ```
@@ -161,8 +166,9 @@ Claude Desktop (`claude_desktop_config.json`):
 The six tools are `situation`, `pieces_a_classer`, `plan_comptable`, `anomalies` and
 `expliquer_piece` (all read-only), plus `proposer_ecriture`. When the server refuses a proposal
 (for example, the account is not an expense account, the VAT code contradicts the bill, or the
-document is held), the refusal comes back to the model as a readable tool error, and the model uses
-it to correct itself. The headless command used for the evaluation runs is in
+document is held), the refusal comes back to the model as a readable tool error, so it can
+correct itself. Tests check that the error is readable; none of the logged runs triggered a
+refusal. The headless command used for the evaluation runs is in
 [`docs/essais.md`](docs/essais.md).
 
 ## What is real and what is simulated
@@ -205,7 +211,9 @@ problem for any barcode library. The work that matters to a fiduciary starts aft
 - A bill that does not state its VAT is not yet flagged as an input-tax risk. The agent raised this
   in its first run.
 - The evaluation covers nine synthetic documents. It shows that the pipeline works; it says nothing
-  about accuracy on real documents.
+  about accuracy on real documents. The documents, the answer key and the tool descriptions were
+  written together, and the VAT-code descriptions name the typical exempt cases (rent, insurance,
+  bank fees, customer receipts), so the set is easy by construction.
 
 ## Repository layout
 
